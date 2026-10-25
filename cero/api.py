@@ -13,6 +13,20 @@ from cero.images import IMAGES
 
 STATIC=Path(__file__).resolve().parent/'static'
 
+# Hosts permitidos: local + el despliegue público (Render, etc.) indicado en SELF_URL.
+import os as _os
+from urllib.parse import urlparse as _urlparse
+_SELF_URL = _os.environ.get('SELF_URL', '').strip()
+_ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver', '[::1]', '*.onrender.com']
+if _SELF_URL:
+    _h = _urlparse(_SELF_URL).hostname or ''
+    if _h and _h not in _ALLOWED_HOSTS:
+        _ALLOWED_HOSTS.append(_h)
+_ALLOWED_ORIGINS = {('localhost', 8765), ('127.0.0.1', 8765), ('::1', 8765), ('testserver', 80)}
+if _SELF_URL:
+    _p = _urlparse(_SELF_URL)
+    _ALLOWED_ORIGINS.add((_p.hostname, _p.port or (443 if _p.scheme == 'https' else 80)))
+
 @asynccontextmanager
 async def lifespan(app):
     # Keep WAL sidecars available for the separate viewer's read-only mount,
@@ -32,7 +46,7 @@ async def lifespan(app):
         database.close()
 
 app=FastAPI(title='CERO · Radar de chollos',lifespan=lifespan)
-app.add_middleware(TrustedHostMiddleware,allowed_hosts=['127.0.0.1','localhost','testserver','[::1]'])
+app.add_middleware(TrustedHostMiddleware,allowed_hosts=_ALLOWED_HOSTS)
 app.mount('/static',StaticFiles(directory=STATIC),name='static')
 app.mount('/media',StaticFiles(directory=IMAGES),name='media')
 
@@ -43,7 +57,10 @@ async def local_changes(request:Request,call_next):
         parsed=urlparse(origin)
         try:port=parsed.port or (443 if parsed.scheme=='https' else 80)
         except ValueError:return JSONResponse({'detail':'Origen no permitido'},status_code=403)
-        if (parsed.hostname,port) not in {('localhost',8765),('127.0.0.1',8765),('::1',8765),('testserver',80)}:
+        allowed = (parsed.hostname,port) in _ALLOWED_ORIGINS
+        if not allowed and parsed.hostname and parsed.hostname.endswith('.onrender.com'):
+            allowed = True
+        if not allowed:
             return JSONResponse({'detail':'Origen no permitido'},status_code=403)
     return await call_next(request)
 
