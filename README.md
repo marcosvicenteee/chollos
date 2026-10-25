@@ -24,7 +24,7 @@ Abre **http://127.0.0.1:8765/**. No necesitas activar el entorno ni cambiar pol�
 
 Añade tu propia `GEMINI_API_KEY` en `.env`. Sin clave continúa el rastreo, con puntuaciones etiquetadas como reglas.
 
-Usa **Gemini 2.5 Flash-Lite**, análisis por lotes, caché y razonamiento desactivado. No usa búsqueda de pago para puntuar. Límite predeterminado: **3 €/día**, reducible con `GEMINI_DAILY_BUDGET_EUR`. Se reserva el coste antes de cada llamada mediante una transacción; los tiempos de espera conservan su reserva. La estimación incluye margen y no sustituye la factura del proveedor. Consulta la [tarifa oficial](https://ai.google.dev/gemini-api/docs/pricing).
+Usa **Gemini 3.5 Flash-Lite**, análisis por lotes, caché y razonamiento desactivado. No usa búsqueda de pago para puntuar. Límite predeterminado: **3 €/día**, reducible con `GEMINI_DAILY_BUDGET_EUR`. Se reserva el coste antes de cada llamada mediante una transacción; los tiempos de espera conservan su reserva. La estimación incluye margen y no sustituye la factura del proveedor. Consulta la [tarifa oficial](https://ai.google.dev/gemini-api/docs/pricing).
 
 El límite se reinicia a medianoche de `BUDGET_TIMEZONE`, incluyendo cambios de hora. Alcanzarlo pausa la IA, no las fuentes gratuitas. No cambia a un modelo más caro automáticamente.
 

@@ -228,7 +228,7 @@ def score_deals(conn,deals,log):
             r=requests.post(f'https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent',
               headers={'x-goog-api-key':GEMINI_API_KEY,'Content-Type':'application/json'},
               json={'contents':[{'parts':[{'text':prompt}]}],
-                    'generationConfig':{'temperature':0,'maxOutputTokens':2400,'responseMimeType':'application/json','responseSchema':RESPONSE_SCHEMA,'thinkingConfig':{'thinkingBudget':0}}},
+                    'generationConfig':{'temperature':0,'maxOutputTokens':2400,'responseMimeType':'application/json','responseSchema':RESPONSE_SCHEMA,'thinkingConfig':{'thinkingLevel':'minimal'}}},
               timeout=25,impersonate='chrome')
         except Exception:
             # Un timeout puede haber generado coste: conservar la reserva evita sobrepasar el límite.

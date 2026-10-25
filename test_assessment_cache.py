@@ -16,7 +16,7 @@ class PriorAssessmentTests(unittest.TestCase):
         self.old={'id':'known','url':'https://tienda.es/products/bolsa?variant=123','title':'Bolsa de papel azul',
             'variant':'Default Title','price':0,'availability':'in_stock','status':'verified','page_status':'ok',
             'verification_level':'cart','image_status':'verified','shipping':4.5,'free_review':'accepted',
-            'score_source':'gemini-2.5-flash-lite','ai_score':98,'ai_reason':'Artículo físico independiente sin compra adicional.',
+            'score_source':'gemini-3.5-flash-lite','ai_score':98,'ai_reason':'Artículo físico independiente sin compra adicional.',
             'score':98,'verdict':'gratis','sale_context':'Bolsa de papel. Dimensiones 33 x 10 x 29 cm.',
             'conditions':'Producto a cero en cesta individual, con tarifa de entrega cotizada.',
             'category':'Accesorios','subcategory':'Embalaje','product_type':'bolsa de papel','checked_at':db.now(),

@@ -28,7 +28,7 @@ class PublicRadarTests(unittest.TestCase):
                'status':'verified','availability':'in_stock','free_review':'accepted','page_status':'ok','score':96,
                'checked_at':db.now(),'reason':'Bolsa individual a cero.','currency':'EUR','category':'Moda',
                'is_free':1,'is_sample':0,'sale_context':'INTERNAL-SENTINEL','ai_reason':'PRIVATE-RAW-ANALYSIS',
-               'evidence':json.dumps(['INTERNAL-CONTEXT']),'score_source':'gemini-2.5-flash-lite'}
+               'evidence':json.dumps(['INTERNAL-CONTEXT']),'score_source':'gemini-3.5-flash-lite'}
         names = ','.join(row)
         conn.execute(f'INSERT INTO deals({names}) VALUES({",".join("?" for _ in row)})',list(row.values()))
         conn.execute("INSERT INTO stores(domain,name,url,origin,country,enabled,checked_at,status) VALUES(?,?,?,?,?,?,?,?)",
