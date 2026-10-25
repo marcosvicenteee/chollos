@@ -33,7 +33,10 @@ services:
         value: "true"
       - key: DISCORD_HEARTBEAT_MINUTES
         value: "30"
-    disk:
-      name: cero-data
-      mountPath: /opt/render/project/src/data
-      sizeGB: 1
+# NOTA: los discos persistentes NO están disponibles en el plan gratuito de Render.
+# En plan gratuito la base de datos (data/cero.db) se borra en cada redeploy/reinicio.
+# Para persistencia real, cambia plan: starter (de pago) y descomenta el bloque disk de abajo.
+# disk:
+#   name: cero-data
+#   mountPath: /opt/render/project/src/data
+#   sizeGB: 1
