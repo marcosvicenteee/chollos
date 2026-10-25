@@ -187,7 +187,7 @@ def send_deal(deal):
     if not armed() or _FATAL['detail'] or not eligible(deal) or not fresh(deal):
         return False
     embed, image, filename = build(deal)
-    user = mention_user()
+    user = mention_user() if deal.get('price') == 0 else ''
     content = f'<@{user}>' if user else ''
     allowed = {'users': [user]} if user else {'parse': []}
     ok, _ = _post(embed, image, filename, content=content, allowed_mentions=allowed)
@@ -206,7 +206,7 @@ def flush(limit=5):
                 discard(c, row['notification_id'])
                 continue
             embed, image, filename = build(deal)
-            user = mention_user()
+            user = mention_user() if deal.get('price') == 0 else ''
             content = f'<@{user}>' if user else ''
             allowed = {'users': [user]} if user else {'parse': []}
             ok, wait = _post(embed, image, filename, content=content, allowed_mentions=allowed)
