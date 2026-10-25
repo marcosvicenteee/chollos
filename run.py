@@ -1,4 +1,7 @@
+import os
 import uvicorn
 
 if __name__ == "__main__":
-    uvicorn.run("cero.api:app", host="127.0.0.1", port=8765, reload=False)
+    host = os.environ.get("HOST", "0.0.0.0")
+    port = int(os.environ.get("PORT", "8765"))
+    uvicorn.run("cero.api:app", host=host, port=port, reload=False)

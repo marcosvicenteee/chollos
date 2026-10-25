@@ -95,6 +95,49 @@ Configura **tu propio ID** en `AMAZON_ASSOCIATE_TAG`. Los enlaces de salida lo i
 
 El adaptador alterna búsquedas por producto, 32 marcas y 12 departamentos. Rota las páginas 1–4 y umbrales del 80% y 90%, incluyendo el 100%. Cada pasada normal hace 12 búsquedas (36 en una profunda) y abre también una selección de fichas cuyo listado oculta el precio de referencia. Los ASIN nuevos tienen prioridad y se comprueba el precio de la talla o color seleccionados en la ficha. Hay una revisión específica de Amazon cada 10 minutos, cuando el motor queda libre; se configura en el panel. Los precios y referencias anunciados no acreditan por sí solos el ahorro frente al mercado.
 
+## Despliegue en Render (24/7)
+
+El repositorio incluye `render.yaml` para crear el servicio con un clic:
+
+1. Sube el repo a GitHub (la carpeta `data/` y `.env` están ignoradas).
+2. En Render → **New → Blueprint** → selecciona el repo. Render leerá `render.yaml`.
+3. Rellena las variables marcadas como `sync: false` (GEMINI_API_KEY, DISCORD_WEBHOOK_URL, DISCORD_STATUS_WEBHOOK_URL, AMAZON_ASSOCIATE_TAG, SELF_URL).
+4. Cuando termine el primer despliegue, copia la URL pública (algo como `https://cero-radar.onrender.com`) y pégala en `SELF_URL`. Redespliega.
+5. El disco persistente `cero-data` guarda `data/cero.db` y la base de tiendas entre reinicios. Las imágenes de producto se re-descargan si se pierden (están en `cero/static/cache/`, fuera del disco).
+
+El auto-ping (`cero/keepalive.py`) hace GET a `SELF_URL/health` cada 10 minutos, por debajo del umbral de suspensión de Render, así el servicio se mantiene despierto. El health check de Render usa `/health`.
+
+Notas:
+- El plan gratuito tiene 750 h/mes: suficiente para un servicio 24/7, pero el disco persistente y el navegador (Playwright) aumentan el uso de memoria. Si el build falla por memoria, reduce `max_workers` o desactiva fuentes pesadas en Configuración.
+- `BUDGET_TIMEZONE` por defecto es la del país elegido; ajústalo si tu servidor está en otra zona.
+- El rastreo y el envío a Discord funcionan igual que en local; la bandeja y los avisos viven en el disco persistente.
+
+Cada chollo confirmado se envía solo a un canal de Discord por webhook: foto, precio, gastos, descuento, interés y enlace. No hay que dejar nada abierto: el envío ocurre en segundo plano mientras el radar trabaja.
+
+1. En Discord: **Ajustes del canal → Integraciones → Webhooks → Nuevo webhook → Copiar URL del webhook**.
+2. Pega la URL en `.env`:
+
+```
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
+DISCORD_ENABLED=true
+```
+
+3. Reinicia el panel (`.venv\Scripts\python run.py`). Los avisos que ya estén en la bandeja salen en la siguiente pasada.
+
+Comprobación y envío manual:
+
+```
+.venv\Scripts\python -m cero.discord --test
+.venv\Scripts\python -m cero.discord --status
+.venv\Scripts\python -m cero.discord --send
+```
+
+Se aplican los mismos criterios de calidad: ficha verificada, foto propia validada, cero aceptado por revisión o rebaja de al menos el 80 % con score de 85 o más, y lectura de menos de dos horas. Los avisos viven en la tabla `notifications` con canal `discord`, así que no se pierden al reiniciar ni se repiten si el precio no baja; sólo se reabren al reponer stock o al mejorar el precio. El webhook respeta el límite de ritmo de Discord y, si se borra o caduca, el canal se detiene y lo indica en `/api/discord`.
+
+**Mención.** Si defines `DISCORD_MENTION_USER_ID` con tu ID de Discord, cada chollo menciona a ese usuario en el mensaje. Útil para que no te pierdas un cero con envío gratis.
+
+**Pulso "sigo buscando".** Con `DISCORD_STATUS_WEBHOOK_URL` (otro webhook, por ejemplo un canal de estado) CERO envía cada `DISCORD_HEARTBEAT_MINUTES` minutos (30 por defecto) un mensaje con el resultado de la última pasada y el total de ofertas verificadas, para que la comunidad vea que el radar sigue vivo. El primer pulso sale 5 segundos después de arrancar.
+
 ## Telegram preparado y desactivado
 
 Sin opciones en el panel y sin envíos automáticos. Bandeja local y transporte con foto, precio, gastos y enlace. Inspección sin enviar:

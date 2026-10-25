@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: cero-radar
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python -m playwright install chromium
+    startCommand: python run.py
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.0"
+      - key: HOST
+        value: "0.0.0.0"
+      - key: CERO_DATA_DIR
+        value: /opt/render/project/src/data
+      - key: SELF_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_DAILY_BUDGET_EUR
+        value: "3"
+      - key: AMAZON_ASSOCIATE_TAG
+        sync: false
+      - key: DISCORD_WEBHOOK_URL
+        sync: false
+      - key: DISCORD_ENABLED
+        value: "true"
+      - key: DISCORD_MENTION_USER_ID
+        value: "1306929787033354250"
+      - key: DISCORD_STATUS_WEBHOOK_URL
+        sync: false
+      - key: DISCORD_STATUS_ENABLED
+        value: "true"
+      - key: DISCORD_HEARTBEAT_MINUTES
+        value: "30"
+    disk:
+      name: cero-data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1

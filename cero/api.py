@@ -20,8 +20,14 @@ async def lifespan(app):
     database=connect()
     try:
         boot()
+        from cero.discord import start_worker
+        start_worker()
+        from cero.keepalive import start as keepalive_start
+        keepalive_start()
         yield
     finally:
+        from cero.discord import stop_worker
+        stop_worker()
         shutdown()
         database.close()
 
@@ -57,8 +63,9 @@ class ScheduleIn(BaseModel):
     discovery_minutes:int=Field(default=60,ge=15,le=1440)
     deep_hours:int=Field(default=24,ge=6,le=168)
 
-@app.get('/')
-def home():return FileResponse(STATIC/'index.html')
+@app.get('/health')
+@app.get('/api/health')
+def health_view():return {'status':'ok','service':'cero-radar'}
 
 @app.get('/api/history')
 def history_view():
@@ -93,6 +100,19 @@ def meta_view():
 
 @app.get('/api/status')
 def status_view():return status()
+
+@app.get('/api/discord')
+def discord_view():
+    from cero.discord import status as discord_status
+    return discord_status()
+
+@app.post('/api/discord/test')
+def discord_test():
+    from cero.discord import armed,send_test
+    if not armed():raise HTTPException(409,'Define DISCORD_WEBHOOK_URL en .env y reinicia.')
+    ok,detail=send_test()
+    if not ok:raise HTTPException(502,detail or 'Discord no aceptó el mensaje')
+    return {'sent':True}
 
 @app.post('/api/scan')
 def scan(body:ScanIn):

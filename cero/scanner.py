@@ -46,8 +46,11 @@ def stop():
 
 def _save(conn,d):
     from cero.images import ensure_image
+    from cero import discord
     if d.get('status') not in ('rejected','blocked','unverified') or d.get('last_verified_at'):ensure_image(d)
-    key=upsert(conn,d);enqueue(conn,key,d);conn.commit()
+    key=upsert(conn,d);enqueue(conn,key,d);queued=discord.enqueue(conn,key,d);conn.commit()
+    # El aviso se despierta después del commit: el hilo de Discord lee la base de datos.
+    if queued:discord.notify_new()
     with _lock:
         STATE['checked']+=1
         if key not in _found_ids and d.get('status')=='verified' and d.get('image_status')=='verified' and candidate(d):

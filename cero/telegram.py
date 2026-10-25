@@ -9,18 +9,9 @@ from cero.db import now
 
 
 def enqueue(conn,deal_id,deal):
-    if deal.get('status')!='verified' or deal.get('is_sample') or deal.get('image_status')!='verified':return
-    if deal.get('price')==0 and deal.get('free_review')!='accepted':return
-    if deal.get('price')!=0 and (deal.get('discount_pct') or 0)<80:return
-    if deal.get('price')!=0 and (deal.get('score') or 0)<85:return
-    previous=conn.execute('SELECT status FROM observations WHERE deal_id=? ORDER BY id DESC LIMIT 1 OFFSET 1',(deal_id,)).fetchone()
-    restocked=bool(previous and previous['status']=='expired')
-    conn.execute('''INSERT INTO notifications(deal_id,payload,created_at) VALUES(?,?,?)
-      ON CONFLICT(deal_id,channel) DO UPDATE SET payload=excluded.payload,created_at=excluded.created_at,
-      sent_at=CASE WHEN ? OR json_extract(excluded.payload,'$.price')<COALESCE(json_extract(notifications.payload,'$.price'),1e12)
-      THEN NULL ELSE notifications.sent_at END''',
-      (deal_id,json.dumps({'title':deal.get('title'),'url':deal.get('url'),'price':deal.get('price'),
-                          'variant':deal.get('variant'),'score':deal.get('score')},ensure_ascii=False),now(),int(restocked)))
+    # Comparte bandeja y criterios con el resto de canales (cero.inbox).
+    from cero.inbox import enqueue as queue_deal
+    return queue_deal(conn,deal_id,deal,'telegram')
 
 
 def armed():
